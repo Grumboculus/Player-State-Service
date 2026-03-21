@@ -42,26 +42,27 @@ Example:
 ```
 ## USAGE
 
--- Initialize (call once in your server script)
-PlayerStateService.Init()
+Initialize (call once in your server script)
+   PlayerStateService.Init()
 
--- Get a single value
-local health = PlayerStateService.GetState(player, "Health")
+Get a single value
+   local health = PlayerStateService.GetState(player, "Health")
 
--- Get the full state (returns a deep copy, safe to read freely)
-local state = PlayerStateService.GetFullState(player)
+Get the full state (returns a deep copy, safe to read freely)
+   local state = PlayerStateService.GetFullState(player)
 
--- Set a value (source must match WriteableBy in schema)
-PlayerStateService.SetState(player, "Health", 80, "CombatService")
+Set a value (source must match WriteableBy in schema)
+   PlayerStateService.SetState(player, "Health", 80, "CombatService")
 
--- Nested keys use dot notation
-PlayerStateService.SetState(player, "Stats.Speed", 20, "MovementService")
+Nested keys use dot notation
+   PlayerStateService.SetState(player, "Stats.Speed", 20, "MovementService")
 
--- Listen for any state change
+Listen for any state change
+```lua
 PlayerStateService.Signals.StateChanged:Connect(function(player, key, newValue)
     print(player.Name, "changed", key, "to", newValue)
 end)
-
+```
 ## NOTES
 
 - Sources not listed in WriteableBy will be rejected with a warning.
