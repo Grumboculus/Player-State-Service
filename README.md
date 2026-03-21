@@ -43,19 +43,29 @@ Example:
 ## USAGE
 
 Initialize (call once in your server script)
-   PlayerStateService.Init()
+```lua
+PlayerStateService.Init()
+```
 
 Get a single value
-   local health = PlayerStateService.GetState(player, "Health")
+```lua
+local health = PlayerStateService.GetState(player, "Health")
+```
 
 Get the full state (returns a deep copy, safe to read freely)
-   local state = PlayerStateService.GetFullState(player)
+```lua
+local state = PlayerStateService.GetFullState(player)
+```
 
 Set a value (source must match WriteableBy in schema)
-   PlayerStateService.SetState(player, "Health", 80, "CombatService")
+```lua
+PlayerStateService.SetState(player, "Health", 80, "CombatService")
+```
 
 Nested keys use dot notation
-   PlayerStateService.SetState(player, "Stats.Speed", 20, "MovementService")
+```lua
+PlayerStateService.SetState(player, "Stats.Speed", 20, "MovementService")
+```
 
 Listen for any state change
 ```lua
