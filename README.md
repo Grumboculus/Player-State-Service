@@ -4,51 +4,43 @@ Reach out for any inquiries or feature requests: Ender_tech82 (or Grumbo) on Rob
 Credit with to stravant for the Goodsignal.
 You can use your own signal but it must be hooked up manually.
 
-═══════════════════════════════════════
- SETUP
-═══════════════════════════════════════
+## SETUP
 
 1. Place PlayerStateService, StateSchema, StateTemplate, and GoodSignal
    in the correct locations matching the require() paths.
 2. Call PlayerStateService.Init() once at the start of your server script.
 
-═══════════════════════════════════════
- DEFINING A TEMPLATE
-═══════════════════════════════════════
+## DEFINIING A TEMPLATE
 
 The template defines the default state every player starts with.
 Every key here should have a matching entry in the schema.
 
 Example:
-
+```lua
     StateTemplate.Template = {
         Health = 100,
         Gold = 0,
         IsAlive = true,
     }
-
-═══════════════════════════════════════
- DEFINING A SCHEMA
-═══════════════════════════════════════
+```
+## DEFINING A SCHEMA
 
 The schema defines the rules for each key in the template.
 Each entry requires:
-
+```lua
     SchemaName  - string  - the name of the key
     Type        - string  - "number", "string", "boolean", or "table"
     WriteableBy - table   - list of sources allowed to write to this key
-
+```
 Example:
-
+```lua
     StateSchema.RegisteredSchemas = {
         Health = RegisterSchema("Health", "number", { "CombatService" }),
         Gold = RegisterSchema("Gold", "number", { "EconomyService", "QuestService" }),
         IsAlive = RegisterSchema("IsAlive", "boolean", { "CombatService" }),
     }
-
-═══════════════════════════════════════
- USAGE
-═══════════════════════════════════════
+```
+## USAGE
 
 -- Initialize (call once in your server script)
 PlayerStateService.Init()
@@ -70,9 +62,7 @@ PlayerStateService.Signals.StateChanged:Connect(function(player, key, newValue)
     print(player.Name, "changed", key, "to", newValue)
 end)
 
-═══════════════════════════════════════
- NOTES
-═══════════════════════════════════════
+## NOTES
 
 - Sources not listed in WriteableBy will be rejected with a warning.
 - Values that don't match the schema type will be rejected with a warning.
