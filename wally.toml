@@ -1,0 +1,11 @@
+[package]
+name = "grumboculus/player-state-service"
+description = "An lightweight, schema-driven state machine."
+license = "MIT"
+authors = ["Grumbo"]
+version = "1.1.0"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+exclude = ["aftman.toml"]
+
+[dependencies]

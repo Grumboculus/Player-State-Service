@@ -24,12 +24,12 @@ local function ResolveSchema(key)
 
 	for _, k in ipairs(keys) do
 		if type(schema) ~= "table" then
-			warn("Cannot access key '" .. k .. "' - parent is not a table")
+			warn(string.format("[PlayerStateService] Cannot access '%s' in path '%s': parent is not a table.", k, key))
 			return nil
 		end
 
 		if schema[k] == nil then
-			warn("No key by value of " .. key)
+			warn(string.format("[PlayerStateService] Schema path '%s' is invalid: key '%s' does not exist.", key, k))
 			return nil
 		end
 
@@ -43,11 +43,17 @@ end
 local function IsValidChange(player: Player, key: string, value: any, source: string)
     local verdict = false
 
-    if not PlayerStateService.PlayerState[player.UserId] then warn(`Player: {player.UserId} not initialized.`) return verdict end
+    if not PlayerStateService.PlayerState[player.UserId] then 
+        warn(string.format("[PlayerStateService] Cannot validate change for %s (%d): Player state not initialized.", player.Name, player.UserId))
+        return verdict 
+    end
 
     local path = ResolveSchema(key)
 
-    if not path then warn(`Provided key: {key} wasn't found.`) return verdict end
+    if not path then 
+        warn(string.format("[PlayerStateService] Cannot validate change for %s (%d): Schema path '%s' not found.", player.Name, player.UserId, key))
+        return verdict 
+    end
 
     local IsValidAuthor = false
     if path.WriteableBy then
@@ -60,12 +66,12 @@ local function IsValidChange(player: Player, key: string, value: any, source: st
     end
 
     if not IsValidAuthor then 
-        warn(`Source: {source} doesn't have write access to: {key}`)
+        warn(string.format("[PlayerStateService] Permission denied for %s (%d): Source '%s' cannot write to '%s'.", player.Name, player.UserId, source, key))
         return verdict
     end
 
     if tostring(typeof(value)) ~= path.Type then
-        warn(`Value: {value} isn't equivelent to {path.Type}`)
+        warn(string.format("[PlayerStateService] Type mismatch for %s (%d) at '%s': Expected %s, got %s.", player.Name, player.UserId, key, path.Type, tostring(typeof(value))))
         return verdict
     end
 
@@ -117,8 +123,8 @@ end
 -- Retrieves a specific value from a player's state using a string path.
 function PlayerStateService.GetState(player: Player, key: string) 
     if not PlayerStateService.PlayerState[player.UserId] then
-        warn("Player not found: " .. player.Name)
-        return
+        warn(string.format("[PlayerStateService] GetState failed: Player %s (%d) state not initialized.", player.Name, player.UserId))
+        return nil
     end
 
     local keys = string.split(key, ".")
@@ -126,12 +132,12 @@ function PlayerStateService.GetState(player: Player, key: string)
 
 	for _, k in ipairs(keys) do
 		if type(current) ~= "table" then
-			warn("Cannot access key '" .. k .. "' - parent is not a table")
+			warn(string.format("[PlayerStateService] GetState failed for %s (%d): Cannot access '%s' in path '%s' because its parent is not a table.", player.Name, player.UserId, k, key))
 			return nil
 		end
 
 		if current[k] == nil then
-			warn("No key by value of " .. key)
+			warn(string.format("[PlayerStateService] GetState failed for %s (%d): Invalid path '%s' - key '%s' does not exist.", player.Name, player.UserId, key, k))
 			return nil
 		end
 
@@ -158,7 +164,7 @@ function PlayerStateService.SetState(player: Player, key: string, value: any, so
 
 	for i, k in ipairs(keys) do
 		if type(current) ~= "table" then
-			warn("Cannot access key '" .. k .. "' - parent is not a table")
+			warn(string.format("[PlayerStateService] SetState failed for %s (%d): Cannot access '%s' in path '%s' because its parent is not a table.", player.Name, player.UserId, k, key))
 			return
 		end
 
@@ -167,7 +173,7 @@ function PlayerStateService.SetState(player: Player, key: string, value: any, so
 			current[k] = value
 		else
 			if current[k] == nil then
-				warn("No key by value of " .. k)
+				warn(string.format("[PlayerStateService] SetState failed for %s (%d): Invalid path '%s' - key '%s' does not exist.", player.Name, player.UserId, key, k))
 				return
 			end
 			current = current[k]
@@ -175,6 +181,32 @@ function PlayerStateService.SetState(player: Player, key: string, value: any, so
 	end
 
     FireStateChanged(player, key, value)
+end
+
+function PlayerStateService.ModifyState(player: Player, key: string, delta: number, source: string)
+    if type(delta) ~= "number" then
+        warn(string.format("[PlayerStateService] ModifyState failed for %s (%d): Delta must be a number, got %s.", player.Name, player.UserId, typeof(delta)))
+        return
+    end
+
+    local schema = ResolveSchema(key)
+    if not schema then 
+        warn(string.format("[PlayerStateService] ModifyState failed for %s (%d): Schema path '%s' not found.", player.Name, player.UserId, key))
+        return
+    end
+
+    if schema.Type ~= "number" then
+        warn(string.format("[PlayerStateService] ModifyState failed for %s (%d): Cannot modify non-number type '%s' at path '%s'.", player.Name, player.UserId, schema.Type, key))
+        return
+    end
+
+    local currentValue = PlayerStateService.GetState(player, key)
+    if currentValue == nil then
+        return
+    end
+
+    local newValue = currentValue + delta
+    PlayerStateService.SetState(player, key, newValue, source)
 end
 
 return PlayerStateService
